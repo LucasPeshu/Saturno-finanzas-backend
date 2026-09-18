@@ -1,0 +1,24 @@
+name: saturno-control-gastos
+services:
+  postgresDB:
+    image: postgres:16-alpine
+    container_name: saturno_gastos_postgres
+    restart: unless-stopped
+    environment:
+      - POSTGRES_USER=postgres
+      - POSTGRES_PASSWORD=${POSTGRES_PASSWORD:?Configurar POSTGRES_PASSWORD}
+      - POSTGRES_DB=control_gastos
+      - TZ=America/Argentina/Buenos_Aires
+      - PGTZ=America/Argentina/Buenos_Aires
+    volumes:
+      - gastos_data:/var/lib/postgresql/data
+    ports:
+      - "127.0.0.1:5437:5432"
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U postgres -d control_gastos"]
+      interval: 5s
+      timeout: 5s
+      retries: 10
+volumes:
+  gastos_data:
+    name: saturno_control_gastos_data
