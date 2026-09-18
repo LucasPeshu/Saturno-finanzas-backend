@@ -7,14 +7,18 @@ import { UserRolesOwnerMember1790000000001 } from './migrations/1790000000001-us
 config({ path: resolve(__dirname, '../../.env'), quiet: true });
 export function databaseOptions(): DataSourceOptions {
   const database = process.env.POSTGRES_DATABASE ?? 'control_gastos';
+  const host = process.env.POSTGRES_HOST ?? '127.0.0.1';
   // This backend is a fork: refuse the copied database name even when .env is stale.
-  if (!/^control_gastos(?:_[a-z0-9_]+)?$/.test(database))
+  const isProjectDatabase = /^control_gastos(?:_[a-z0-9_]+)?$/.test(database);
+  const isSupabaseDefaultDatabase =
+    database === 'postgres' && /\.supabase\.co$/i.test(host);
+  if (!isProjectDatabase && !isSupabaseDefaultDatabase)
     throw new Error(
-      'POSTGRES_DATABASE debe ser control_gastos o control_gastos_<entorno>',
+      'POSTGRES_DATABASE debe ser control_gastos, control_gastos_<entorno> o postgres en Supabase',
     );
   return {
     type: 'postgres',
-    host: process.env.POSTGRES_HOST ?? '127.0.0.1',
+    host,
     port: Number(process.env.POSTGRES_PORT ?? 5437),
     username: process.env.POSTGRES_USERNAME ?? 'postgres',
     password: process.env.POSTGRES_PASSWORD,
