@@ -50,7 +50,7 @@ export class AuditService {
       manager.create(AuditLog, {
         organizationId:
           actor?.organizationId ??
-          (typeof current.organizationId === 'number'
+          (typeof current.organizationId === 'string'
             ? current.organizationId
             : null),
         actorId: actor?.id ?? null,
@@ -58,9 +58,9 @@ export class AuditService {
         action,
         resource,
         entityId:
-          typeof current.id === 'number'
+          typeof current.id === 'string'
             ? current.id
-            : typeof previous?.id === 'number'
+            : typeof previous?.id === 'string'
               ? previous.id
               : null,
         before: sanitize(before) as Record<string, unknown> | null,

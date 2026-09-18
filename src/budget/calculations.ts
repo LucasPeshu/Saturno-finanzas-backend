@@ -28,10 +28,10 @@ export function dueDate(month: string, day: number) {
 }
 export function splitAmount(
   total: number,
-  members: number[],
+  members: string[],
   splits?: Split[] | null,
 ) {
-  const ids = [...new Set(members)].sort((a, b) => a - b);
+  const ids = [...new Set(members)].sort();
   if (!ids.length)
     throw new BadRequestException('El grupo no tiene integrantes');
   if (
@@ -47,7 +47,7 @@ export function splitAmount(
   }
   const weights = splits
     ? [...splits]
-        .sort((a, b) => a.userId - b.userId)
+        .sort((a, b) => a.userId.localeCompare(b.userId))
         .map((s) => ({ id: s.userId, weight: cents(s.percent) }))
     : ids.map((id) => ({ id, weight: 1 }));
   const denominator = weights.reduce((s, w) => s + w.weight, 0);
@@ -58,14 +58,14 @@ export function splitAmount(
   }));
   let remaining = cents(total) - rows.reduce((s, r) => s + r.value, 0);
   for (const row of [...rows].sort(
-    (a, b) => b.remainder - a.remainder || a.userId - b.userId,
+    (a, b) => b.remainder - a.remainder || a.userId.localeCompare(b.userId),
   )) {
     if (remaining-- > 0) row.value++;
   }
   return rows.map((row) => ({ userId: row.userId, amount: amount(row.value) }));
 }
 export interface Obligation {
-  id: number;
+  id: string;
   description: string;
   remaining: number;
   priority: number;
@@ -84,7 +84,7 @@ export function allocation(
     (a, b) =>
       b.priority - a.priority ||
       a.dueDate.localeCompare(b.dueDate) ||
-      a.id - b.id,
+      a.id.localeCompare(b.id),
   );
   const expenses = ordered.map((e) => {
     const allocated = Math.min(available, cents(e.remaining));

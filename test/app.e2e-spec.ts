@@ -83,7 +83,7 @@ describe('Budget API with isolated PostgreSQL', () => {
     const hash = await bcrypt.hash(password, 4);
     const create = (
       name: string,
-      organizationId: number,
+      organizationId: string,
       role: 'owner' | 'admin' | 'member',
     ) =>
       db.manager.save(
@@ -119,14 +119,14 @@ describe('Budget API with isolated PostgreSQL', () => {
       {},
       { sub: a.id },
       { organizationId: a.organizationId },
-      { sub: String(a.id), organizationId: a.organizationId },
+      { sub: '1', organizationId: a.organizationId },
       { sub: a.id, organizationId: alien.organizationId },
     ]) {
       await get(await jwt.signAsync(claims), 'users/me').expect(401);
     }
     const legacy = new JwtService({ secret: process.env.JWT_SECRET });
     await get(
-      await legacy.signAsync({ sub: a.id, organizationId: a.organizationId }),
+      await legacy.signAsync({ sub: 1, organizationId: 1 }),
       'users/me',
     ).expect(401);
   });
@@ -509,12 +509,12 @@ describe('Budget API with isolated PostgreSQL', () => {
     expect(JSON.stringify(logs.body)).not.toContain(password);
     expect(
       logs.body.data.every(
-        (l: { organizationId: number }) =>
+        (l: { organizationId: string }) =>
           l.organizationId === a.organizationId,
       ),
     ).toBe(true);
     const mine = (await get(tokenB, 'audit-logs').expect(200)).body.data;
-    expect(mine.every((l: { actorId: number }) => l.actorId === b.id)).toBe(
+    expect(mine.every((l: { actorId: string }) => l.actorId === b.id)).toBe(
       true,
     );
   });

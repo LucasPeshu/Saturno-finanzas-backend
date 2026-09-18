@@ -16,29 +16,37 @@ describe('Budget policies', () => {
     expect(dueDate('2028-02', 31)).toBe('2028-02-29');
   });
   it('keeps every cent in equal and weighted distributions', () => {
-    expect(splitAmount(100, [3, 1, 2])).toEqual([
-      { userId: 1, amount: 33.34 },
-      { userId: 2, amount: 33.33 },
-      { userId: 3, amount: 33.33 },
+    expect(splitAmount(100, ['user-3', 'user-1', 'user-2'])).toEqual([
+      { userId: 'user-1', amount: 33.34 },
+      { userId: 'user-2', amount: 33.33 },
+      { userId: 'user-3', amount: 33.33 },
     ]);
     expect(
       splitAmount(
         0.03,
-        [1, 2],
+        ['user-1', 'user-2'],
         [
-          { userId: 1, percent: 50 },
-          { userId: 2, percent: 50 },
+          { userId: 'user-1', percent: 50 },
+          { userId: 'user-2', percent: 50 },
         ],
       ),
     ).toEqual([
-      { userId: 1, amount: 0.02 },
-      { userId: 2, amount: 0.01 },
+      { userId: 'user-1', amount: 0.02 },
+      { userId: 'user-2', amount: 0.01 },
     ]);
     expect(() =>
-      splitAmount(100, [1, 2], [{ userId: 1, percent: 70 }]),
+      splitAmount(
+        100,
+        ['user-1', 'user-2'],
+        [{ userId: 'user-1', percent: 70 }],
+      ),
     ).toThrow();
     expect(() =>
-      splitAmount(100, [1, 2], [{ userId: 3, percent: 100 }]),
+      splitAmount(
+        100,
+        ['user-1', 'user-2'],
+        [{ userId: 'user-3', percent: 100 }],
+      ),
     ).toThrow();
   });
   it('covers priorities first and divides only the surplus', () => {
@@ -46,7 +54,7 @@ describe('Budget policies', () => {
       1100000,
       [
         {
-          id: 1,
+          id: 'expense-1',
           description: 'Alquiler',
           remaining: 600000,
           priority: 100,
@@ -68,14 +76,14 @@ describe('Budget policies', () => {
       100,
       [
         {
-          id: 1,
+          id: 'expense-1',
           description: 'Juego',
           remaining: 80,
           priority: 10,
           dueDate: '2026-09-01',
         },
         {
-          id: 2,
+          id: 'expense-2',
           description: 'Luz',
           remaining: 100,
           priority: 100,
@@ -85,7 +93,10 @@ describe('Budget policies', () => {
       60,
       20,
     );
-    expect(insufficient.expenses[0]).toMatchObject({ id: 2, allocated: 100 });
+    expect(insufficient.expenses[0]).toMatchObject({
+      id: 'expense-2',
+      allocated: 100,
+    });
     expect(insufficient.shortfall).toBe(80);
     expect(insufficient.suggestedSavings).toBe(0);
   });

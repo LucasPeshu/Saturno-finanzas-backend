@@ -36,15 +36,12 @@ export class SessionGuard implements CanActivate {
     if (scheme !== 'Bearer' || !token) throw new UnauthorizedException();
     try {
       const payload = await this.jwt.verifyAsync<{
-        sub: number;
-        organizationId: number;
+        sub: string;
+        organizationId: string;
       }>(token);
-      if (
-        !Number.isSafeInteger(payload.sub) ||
-        payload.sub < 1 ||
-        !Number.isSafeInteger(payload.organizationId) ||
-        payload.organizationId < 1
-      ) {
+      const uuid =
+        /^[0-9a-f]{8}-[0-9a-f]{4}-4[0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i;
+      if (!uuid.test(payload.sub) || !uuid.test(payload.organizationId)) {
         throw new UnauthorizedException();
       }
       const user = await this.db.getRepository(User).findOneBy({

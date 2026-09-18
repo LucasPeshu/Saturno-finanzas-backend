@@ -4,6 +4,7 @@ import { resolve } from 'node:path';
 import { ENTITIES } from './entities';
 import { InitialBudget1790000000000 } from './migrations/1790000000000-initial-budget';
 import { UserRolesOwnerMember1790000000001 } from './migrations/1790000000001-user-roles-owner-member';
+import { IdsToUuid1790000000002 } from './migrations/1790000000002-ids-to-uuid';
 config({ path: resolve(__dirname, '../../.env'), quiet: true });
 export function databaseOptions(): DataSourceOptions {
   const database = process.env.POSTGRES_DATABASE ?? 'control_gastos';
@@ -31,7 +32,11 @@ export function databaseOptions(): DataSourceOptions {
     database,
     ssl: process.env.POSTGRES_SSL === 'true' ? { rejectUnauthorized } : false,
     entities: ENTITIES,
-    migrations: [InitialBudget1790000000000, UserRolesOwnerMember1790000000001],
+    migrations: [
+      InitialBudget1790000000000,
+      UserRolesOwnerMember1790000000001,
+      IdsToUuid1790000000002,
+    ],
     synchronize: false,
     invalidWhereValuesBehavior: { null: 'throw', undefined: 'throw' },
     migrationsRun: false,

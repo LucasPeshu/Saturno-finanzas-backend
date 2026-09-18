@@ -5,7 +5,7 @@ import {
   Delete,
   Get,
   Param,
-  ParseIntPipe,
+  ParseUUIDPipe,
   Patch,
   Post,
   Query,
@@ -65,29 +65,29 @@ export class OrganizationsController {
   }
   @Patch(':id') updateById(
     @CurrentUser() a: Actor,
-    @Param('id', ParseIntPipe) id: number,
+    @Param('id', ParseUUIDPipe) id: string,
     @Body() dto: OrganizationDto,
   ) {
     return this.service.updateOrganization(a, id, dto);
   }
   @Get(':id/users') users(
     @CurrentUser() a: Actor,
-    @Param('id', ParseIntPipe) id: number,
+    @Param('id', ParseUUIDPipe) id: string,
     @Query() q: QueryDto,
   ) {
     return this.service.organizationUsers(a, id, q);
   }
   @Post(':id/users') createUser(
     @CurrentUser() a: Actor,
-    @Param('id', ParseIntPipe) id: number,
+    @Param('id', ParseUUIDPipe) id: string,
     @Body() dto: CreateUserDto,
   ) {
     return this.service.createUserInOrganization(a, id, dto);
   }
   @Patch(':id/users/:userId') updateUser(
     @CurrentUser() a: Actor,
-    @Param('id', ParseIntPipe) id: number,
-    @Param('userId', ParseIntPipe) userId: number,
+    @Param('id', ParseUUIDPipe) id: string,
+    @Param('userId', ParseUUIDPipe) userId: string,
     @Body() dto: UpdateUserDto,
   ) {
     return this.service.updateUserInOrganization(a, id, userId, dto);
@@ -116,7 +116,7 @@ export class UsersController {
   }
   @Patch(':id') update(
     @CurrentUser() a: Actor,
-    @Param('id', ParseIntPipe) id: number,
+    @Param('id', ParseUUIDPipe) id: string,
     @Body() dto: UpdateUserDto,
   ) {
     return this.service.updateUser(a, id, dto);
@@ -136,20 +136,20 @@ export class GroupsController {
   }
   @Get(':id/members') members(
     @CurrentUser() a: Actor,
-    @Param('id', ParseIntPipe) id: number,
+    @Param('id', ParseUUIDPipe) id: string,
   ) {
     return this.service.members(a, id);
   }
   @Patch(':id') update(
     @CurrentUser() a: Actor,
-    @Param('id', ParseIntPipe) id: number,
+    @Param('id', ParseUUIDPipe) id: string,
     @Body() dto: NameDto,
   ) {
     return this.service.saveGroup(a, dto, id);
   }
   @Post(':id/invitations') invite(
     @CurrentUser() a: Actor,
-    @Param('id', ParseIntPipe) id: number,
+    @Param('id', ParseUUIDPipe) id: string,
     @Body() dto: InviteDto,
   ) {
     return this.service.invite(a, id, dto.userId);
@@ -166,7 +166,7 @@ export class InvitationsController {
   }
   @Post(':id/respond') respond(
     @CurrentUser() a: Actor,
-    @Param('id', ParseIntPipe) id: number,
+    @Param('id', ParseUUIDPipe) id: string,
     @Body() dto: RespondDto,
   ) {
     return this.service.respond(a, id, dto.status);
@@ -186,7 +186,7 @@ export class CategoriesController {
   }
   @Patch(':id') update(
     @CurrentUser() a: Actor,
-    @Param('id', ParseIntPipe) id: number,
+    @Param('id', ParseUUIDPipe) id: string,
     @Body() dto: UpdateCategoryDto,
   ) {
     return this.service.saveCategory(a, dto, id);
@@ -206,7 +206,7 @@ export class TagsController {
   }
   @Patch(':id') update(
     @CurrentUser() a: Actor,
-    @Param('id', ParseIntPipe) id: number,
+    @Param('id', ParseUUIDPipe) id: string,
     @Body() dto: UpdateTagDto,
   ) {
     return this.service.saveTag(a, dto, id);
@@ -226,7 +226,7 @@ export class ExpensesController {
   }
   @Get(':id') detail(
     @CurrentUser() a: Actor,
-    @Param('id', ParseIntPipe) id: number,
+    @Param('id', ParseUUIDPipe) id: string,
   ) {
     return this.service.access.db.transaction('REPEATABLE READ', (m) =>
       this.service.detail(m, a, id),
@@ -237,14 +237,14 @@ export class ExpensesController {
   }
   @Post(':id/payments') pay(
     @CurrentUser() a: Actor,
-    @Param('id', ParseIntPipe) id: number,
+    @Param('id', ParseUUIDPipe) id: string,
     @Body() dto: MoneyDto,
   ) {
     return this.finance.pay(a, id, dto);
   }
   @Post(':id/cancel') cancel(
     @CurrentUser() a: Actor,
-    @Param('id', ParseIntPipe) id: number,
+    @Param('id', ParseUUIDPipe) id: string,
   ) {
     return this.service.cancel(a, id);
   }
@@ -263,14 +263,14 @@ export class TemplatesController {
   }
   @Patch(':id') update(
     @CurrentUser() a: Actor,
-    @Param('id', ParseIntPipe) id: number,
+    @Param('id', ParseUUIDPipe) id: string,
     @Body() dto: UpdateTemplateDto,
   ) {
     return this.service.updateTemplate(a, id, dto);
   }
   @Post(':id/generate') generate(
     @CurrentUser() a: Actor,
-    @Param('id', ParseIntPipe) id: number,
+    @Param('id', ParseUUIDPipe) id: string,
     @Body() dto: GenerateDto,
   ) {
     return this.service.generate(a, id, dto.month);
@@ -290,10 +290,23 @@ export class IncomesController {
   }
   @Post(':id/reverse') reverse(
     @CurrentUser() a: Actor,
-    @Param('id', ParseIntPipe) id: number,
+    @Param('id', ParseUUIDPipe) id: string,
     @Body() dto: ReversalDto,
   ) {
     return this.service.reverseIncome(a, id, dto);
+  }
+  @Post(':id/restore') restore(
+    @CurrentUser() a: Actor,
+    @Param('id', ParseUUIDPipe) id: string,
+    @Body() dto: ReversalDto,
+  ) {
+    return this.service.restoreIncome(a, id, dto);
+  }
+  @Delete(':id') deleteReversed(
+    @CurrentUser() a: Actor,
+    @Param('id', ParseUUIDPipe) id: string,
+  ) {
+    return this.service.deleteReversedIncome(a, id);
   }
 }
 @ApiTags('payments')
@@ -304,7 +317,7 @@ export class PaymentsController {
   constructor(private readonly service: FinanceService) {}
   @Post(':id/reverse') reverse(
     @CurrentUser() a: Actor,
-    @Param('id', ParseIntPipe) id: number,
+    @Param('id', ParseUUIDPipe) id: string,
     @Body() dto: ReversalDto,
   ) {
     return this.service.reversePayment(a, id, dto);
@@ -344,7 +357,7 @@ export class GoalsController {
   }
   @Get(':id') detail(
     @CurrentUser() a: Actor,
-    @Param('id', ParseIntPipe) id: number,
+    @Param('id', ParseUUIDPipe) id: string,
   ) {
     return this.service.access.db.transaction('REPEATABLE READ', (m) =>
       this.service.details(m, a, id),
@@ -355,26 +368,26 @@ export class GoalsController {
   }
   @Patch(':id') update(
     @CurrentUser() a: Actor,
-    @Param('id', ParseIntPipe) id: number,
+    @Param('id', ParseUUIDPipe) id: string,
     @Body() dto: UpdateGoalDto,
   ) {
     return this.service.update(a, id, dto);
   }
   @Post(':id/complete') complete(
     @CurrentUser() a: Actor,
-    @Param('id', ParseIntPipe) id: number,
+    @Param('id', ParseUUIDPipe) id: string,
   ) {
     return this.service.close(a, id, 'completed');
   }
   @Post(':id/cancel') cancel(
     @CurrentUser() a: Actor,
-    @Param('id', ParseIntPipe) id: number,
+    @Param('id', ParseUUIDPipe) id: string,
   ) {
     return this.service.close(a, id, 'cancelled');
   }
   @Delete(':id') deleteCancelled(
     @CurrentUser() a: Actor,
-    @Param('id', ParseIntPipe) id: number,
+    @Param('id', ParseUUIDPipe) id: string,
   ) {
     return this.service.deleteCancelled(a, id);
   }

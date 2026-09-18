@@ -30,7 +30,7 @@ export class AccessService {
   write<T>(a: Actor, work: (m: EntityManager) => Promise<T>) {
     return this.unitOfWork.run(a, work);
   }
-  async group(m: EntityManager, a: Actor, id: number, owner = false) {
+  async group(m: EntityManager, a: Actor, id: string, owner = false) {
     const group = await m.findOneBy(Group, {
       id,
       organizationId: a.organizationId,

@@ -71,7 +71,7 @@ export class ExpensesService {
       kind: 'fixed' | 'extra' | 'daily';
       dueDate: string;
     },
-    templateId: number | null = null,
+    templateId: string | null = null,
   ) {
     const { category, tagIds, shares } = await this.fields(m, a, dto);
     const expense = await m.save(
@@ -139,7 +139,7 @@ export class ExpensesService {
       return template;
     });
   }
-  async updateTemplate(a: Actor, id: number, dto: UpdateTemplateDto) {
+  async updateTemplate(a: Actor, id: string, dto: UpdateTemplateDto) {
     return this.access.write(a, async (m) => {
       const template = await m.findOneBy(ExpenseTemplate, {
         id,
@@ -175,7 +175,7 @@ export class ExpensesService {
       return template;
     });
   }
-  async generate(a: Actor, id: number, month: string) {
+  async generate(a: Actor, id: string, month: string) {
     return this.access.write(a, async (m) => {
       const template = await m.findOneBy(ExpenseTemplate, {
         id,
@@ -211,7 +211,7 @@ export class ExpensesService {
       );
     });
   }
-  async visible(m: EntityManager, a: Actor, id: number) {
+  async visible(m: EntityManager, a: Actor, id: string) {
     const expense = await m.findOneBy(Expense, {
       id,
       organizationId: a.organizationId,
@@ -221,7 +221,7 @@ export class ExpensesService {
     else if (expense.ownerId !== a.id) throw new NotFoundException();
     return expense;
   }
-  async detail(m: EntityManager, a: Actor, id: number) {
+  async detail(m: EntityManager, a: Actor, id: string) {
     const expense = await this.visible(m, a, id);
     const shares = await m.findBy(ExpenseShare, {
       organizationId: a.organizationId,
@@ -282,7 +282,7 @@ export class ExpensesService {
       .getManyAndCount();
     return { data, total, page: q.page ?? 1, limit: q.limit ?? 25 };
   }
-  async cancel(a: Actor, id: number) {
+  async cancel(a: Actor, id: string) {
     return this.access.write(a, async (m) => {
       const e = await this.visible(m, a, id);
       if (e.ownerId !== a.id)

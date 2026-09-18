@@ -83,7 +83,7 @@ export class FinanceService {
     m: EntityManager,
     a: Actor,
     currency: Currency,
-    goalId: number | null,
+    goalId: string | null,
     asOf = today(),
   ) {
     const q = m
@@ -105,7 +105,7 @@ export class FinanceService {
     m: EntityManager,
     a: Actor,
     currency: Currency,
-    goalId: number | null,
+    goalId: string | null,
   ) {
     const q = m
       .getRepository(SavingMovement)
@@ -135,7 +135,7 @@ export class FinanceService {
     }
   }
   async command<
-    T extends { id: number; organizationId: number; userId: number },
+    T extends { id: string; organizationId: string; userId: string },
   >(
     a: Actor,
     operation: string,
@@ -220,7 +220,7 @@ export class FinanceService {
       };
     });
   }
-  pay(a: Actor, id: number, dto: MoneyDto) {
+  pay(a: Actor, id: string, dto: MoneyDto) {
     return this.command(a, 'PAY:' + id, dto, ExpensePayment, async (m) => {
       const e = await this.expenses.visible(m, a, id);
       if (e.cancelled) throw new BadRequestException('El gasto está cancelado');
@@ -262,7 +262,7 @@ export class FinanceService {
       };
     });
   }
-  reverseIncome(a: Actor, id: number, dto: ReversalDto) {
+  reverseIncome(a: Actor, id: string, dto: ReversalDto) {
     return this.command(a, 'REVERSE_INCOME:' + id, dto, Income, async (m) => {
       const record = await m.findOneBy(Income, {
         id,
@@ -289,7 +289,66 @@ export class FinanceService {
       };
     });
   }
-  reversePayment(a: Actor, id: number, dto: ReversalDto) {
+  restoreIncome(a: Actor, id: string, dto: ReversalDto) {
+    return this.command(a, 'RESTORE_INCOME:' + id, dto, Income, async (m) => {
+      const record = await m.findOneBy(Income, {
+        id,
+        organizationId: a.organizationId,
+        userId: a.id,
+      });
+      if (!record) throw new NotFoundException();
+      if (!record.reversed)
+        throw new BadRequestException('El ingreso no está revertido');
+      if (record.reversedOn && dto.date < record.reversedOn)
+        throw new BadRequestException(
+          'La fecha no puede ser anterior a la reversión',
+        );
+      const before = { ...record };
+      record.reversed = false;
+      record.reversedOn = null;
+      await m.save(record);
+      return {
+        record,
+        before,
+        kind: 'income',
+        amount: record.amount,
+        description: dto.reason,
+      };
+    });
+  }
+  async deleteReversedIncome(a: Actor, id: string) {
+    return this.access.write(a, async (m) => {
+      const record = await m.findOneBy(Income, {
+        id,
+        organizationId: a.organizationId,
+        userId: a.id,
+      });
+      if (!record) throw new NotFoundException();
+      if (!record.reversed)
+        throw new BadRequestException(
+          'Solo se pueden eliminar ingresos revertidos',
+        );
+      await m.delete(Income, {
+        id: record.id,
+        organizationId: a.organizationId,
+      });
+      await this.access.audit.record(
+        m,
+        a,
+        'DELETE',
+        'incomes',
+        {
+          id: record.id,
+          organizationId: record.organizationId,
+          userId: record.userId,
+          deleted: true,
+        },
+        record,
+      );
+      return { deleted: true };
+    });
+  }
+  reversePayment(a: Actor, id: string, dto: ReversalDto) {
     return this.command(
       a,
       'REVERSE_PAYMENT:' + id,
@@ -322,7 +381,7 @@ export class FinanceService {
       },
     );
   }
-  async visibleGoal(m: EntityManager, a: Actor, id: number) {
+  async visibleGoal(m: EntityManager, a: Actor, id: string) {
     const goal = await m.findOneBy(Goal, {
       id,
       organizationId: a.organizationId,

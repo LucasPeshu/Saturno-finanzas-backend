@@ -200,7 +200,7 @@ export class StatsService {
             return rows;
           },
           [] as {
-            categoryId: number;
+            categoryId: string;
             name: string;
             discretionary: boolean;
             paid: number;

@@ -89,13 +89,13 @@ export class UpdateTagDto extends PartialType(TagDto) {
   @IsOptional() @IsBoolean() active?: boolean;
 }
 export class InviteDto {
-  @IsInt() @Min(1) userId: number;
+  @IsUUID('4') userId: string;
 }
 export class RespondDto {
   @IsIn(['accepted', 'rejected']) status: 'accepted' | 'rejected';
 }
 export class SplitDto {
-  @IsInt() @Min(1) userId: number;
+  @IsUUID('4') userId: string;
   @IsNumber({ maxDecimalPlaces: 2 }) @Min(0.01) @Max(100) percent: number;
 }
 export class ExpenseFieldsDto {
@@ -104,15 +104,14 @@ export class ExpenseFieldsDto {
   @Min(0.01)
   @Max(1_000_000_000)
   amount: number;
-  @IsInt() @Min(1) categoryId: number;
-  @IsOptional() @IsInt() @Min(1) groupId?: number;
+  @IsUUID('4') categoryId: string;
+  @IsOptional() @IsUUID('4') groupId?: string;
   @IsOptional()
   @IsArray()
   @ArrayMaxSize(30)
   @ArrayUnique()
-  @IsInt({ each: true })
-  @Min(1, { each: true })
-  tagIds?: number[];
+  @IsUUID('4', { each: true })
+  tagIds?: string[];
   @IsOptional()
   @IsArray()
   @ArrayMaxSize(100)
@@ -134,7 +133,7 @@ export class TemplateDto extends ExpenseFieldsDto {
 export class UpdateTemplateDto extends PartialType(
   OmitType(TemplateDto, ['groupId', 'splits', 'endMonth'] as const),
 ) {
-  @IsOptional() @IsInt() @Min(1) declare groupId?: number | null;
+  @IsOptional() @IsUUID('4') declare groupId?: string | null;
   @IsOptional()
   @IsArray()
   @ArrayMaxSize(100)
@@ -171,7 +170,7 @@ export class GoalDto extends NameDto {
   @Min(0.01)
   @Max(1_000_000_000)
   targetAmount: number;
-  @IsOptional() @IsInt() @Min(1) groupId?: number;
+  @IsOptional() @IsUUID('4') groupId?: string;
   @IsOptional()
   @IsDateString({ strict: true })
   @Matches(/^\d{4}-\d{2}-\d{2}$/)
@@ -193,7 +192,7 @@ export class SavingDto extends MoneyDto {
   @Min(0.000001)
   @Max(1_000_000)
   exchangeRate?: number;
-  @IsOptional() @IsInt() @Min(1) goalId?: number;
+  @IsOptional() @IsUUID('4') goalId?: string;
   @IsString() @MinLength(1) @MaxLength(160) description: string;
 }
 export class QueryDto {
@@ -208,7 +207,7 @@ export class QueryDto {
   @Matches(/^\d{4}-\d{2}-\d{2}$/)
   dateTo?: string;
   @IsOptional() @Matches(/^20\d{2}-(0[1-9]|1[0-2])$/) month?: string;
-  @IsOptional() @Type(() => Number) @IsInt() @Min(1) groupId?: number;
-  @IsOptional() @Type(() => Number) @IsInt() @Min(1) userId?: number;
+  @IsOptional() @IsUUID('4') groupId?: string;
+  @IsOptional() @IsUUID('4') userId?: string;
   @IsOptional() @IsString() @MaxLength(80) resource?: string;
 }

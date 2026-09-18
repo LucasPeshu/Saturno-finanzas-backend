@@ -41,7 +41,7 @@ export class GoalsService {
       return goal;
     });
   }
-  async update(a: Actor, id: number, dto: UpdateGoalDto) {
+  async update(a: Actor, id: string, dto: UpdateGoalDto) {
     return this.access.write(a, async (m) => {
       const goal = await this.finance.visibleGoal(m, a, id);
       if (goal.ownerId !== a.id)
@@ -55,7 +55,7 @@ export class GoalsService {
       return goal;
     });
   }
-  async close(a: Actor, id: number, status: 'completed' | 'cancelled') {
+  async close(a: Actor, id: string, status: 'completed' | 'cancelled') {
     return this.access.write(a, async (m) => {
       const goal = await this.finance.visibleGoal(m, a, id);
       if (goal.ownerId !== a.id)
@@ -89,7 +89,7 @@ export class GoalsService {
       return goal;
     });
   }
-  async deleteCancelled(a: Actor, id: number) {
+  async deleteCancelled(a: Actor, id: string) {
     return this.access.write(a, async (m) => {
       const goal = await this.finance.visibleGoal(m, a, id);
       if (goal.ownerId !== a.id)
@@ -105,7 +105,7 @@ export class GoalsService {
       return { deleted: true };
     });
   }
-  async details(m: EntityManager, a: Actor, id: number, asOf = today()) {
+  async details(m: EntityManager, a: Actor, id: string, asOf = today()) {
     const goal = await this.finance.visibleGoal(m, a, id);
     if (goal.status === 'deleted') throw new NotFoundException();
     const goals = await m.find(Goal, {

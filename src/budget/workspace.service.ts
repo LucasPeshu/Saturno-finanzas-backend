@@ -50,7 +50,7 @@ export class WorkspaceService {
   }
   async users(a: Actor, q: QueryDto) {
     await this.access.scope(a, q);
-    let ids: number[] | undefined;
+    let ids: string[] | undefined;
     if (q.groupId)
       ids = (
         await this.access.db.manager.findBy(GroupMember, {
@@ -78,7 +78,7 @@ export class WorkspaceService {
       q,
     );
   }
-  async updateUser(a: Actor, id: number, dto: UpdateUserDto) {
+  async updateUser(a: Actor, id: string, dto: UpdateUserDto) {
     this.access.admin(a);
     return this.access.write(a, async (m) => {
       const user = await m.findOneBy(User, {
@@ -170,7 +170,7 @@ export class WorkspaceService {
       return saved;
     });
   }
-  async updateOrganization(a: Actor, id: number, dto: OrganizationDto) {
+  async updateOrganization(a: Actor, id: string, dto: OrganizationDto) {
     this.access.owner(a);
     return this.access.write(a, async (m) => {
       const before = await m.findOneBy(Organization, { id });
@@ -194,7 +194,7 @@ export class WorkspaceService {
       return saved;
     });
   }
-  async organizationUsers(a: Actor, id: number, q: QueryDto) {
+  async organizationUsers(a: Actor, id: string, q: QueryDto) {
     this.access.owner(a);
     if (!(await this.access.db.manager.existsBy(Organization, { id })))
       throw new NotFoundException('Organización no encontrada');
@@ -215,7 +215,7 @@ export class WorkspaceService {
   }
   async createUserInOrganization(
     a: Actor,
-    organizationId: number,
+    organizationId: string,
     dto: CreateUserDto,
   ) {
     this.access.owner(a);
@@ -235,8 +235,8 @@ export class WorkspaceService {
   }
   async updateUserInOrganization(
     a: Actor,
-    organizationId: number,
-    userId: number,
+    organizationId: string,
+    userId: string,
     dto: UpdateUserDto,
   ) {
     this.access.owner(a);
@@ -288,7 +288,7 @@ export class WorkspaceService {
   private async uniqueOrganizationSlug(
     m: import('typeorm').EntityManager,
     base: string,
-    ignoreId?: number,
+    ignoreId?: string,
   ) {
     const normalized = this.slugify(base);
     const exists = await m.existsBy(Organization, {
@@ -318,7 +318,7 @@ export class WorkspaceService {
   async saveCategory(
     a: Actor,
     dto: CategoryDto | UpdateCategoryDto,
-    id?: number,
+    id?: string,
   ) {
     this.access.admin(a);
     return this.access.write(a, async (m) => {
@@ -345,7 +345,7 @@ export class WorkspaceService {
       return saved;
     });
   }
-  async saveTag(a: Actor, dto: TagDto | UpdateTagDto, id?: number) {
+  async saveTag(a: Actor, dto: TagDto | UpdateTagDto, id?: string) {
     this.access.admin(a);
     return this.access.write(a, async (m) => {
       const before = id
@@ -386,7 +386,7 @@ export class WorkspaceService {
       q,
     );
   }
-  async members(a: Actor, id: number) {
+  async members(a: Actor, id: string) {
     await this.access.group(this.access.db.manager, a, id);
     const members = await this.access.db.manager.findBy(GroupMember, {
       organizationId: a.organizationId,
@@ -400,7 +400,7 @@ export class WorkspaceService {
       select: ['id', 'name', 'email', 'active'],
     });
   }
-  async saveGroup(a: Actor, dto: NameDto, id?: number) {
+  async saveGroup(a: Actor, dto: NameDto, id?: string) {
     return this.access.write(a, async (m) => {
       const before = id ? await this.access.group(m, a, id, true) : null;
       const saved = await m.save(
@@ -432,7 +432,7 @@ export class WorkspaceService {
       return saved;
     });
   }
-  async invite(a: Actor, groupId: number, userId: number) {
+  async invite(a: Actor, groupId: string, userId: string) {
     return this.access.write(a, async (m) => {
       await this.access.group(m, a, groupId, true);
       if (
@@ -493,7 +493,7 @@ export class WorkspaceService {
       q,
     );
   }
-  async respond(a: Actor, id: number, status: 'accepted' | 'rejected') {
+  async respond(a: Actor, id: string, status: 'accepted' | 'rejected') {
     return this.access.write(a, async (m) => {
       const invitation = await m.findOneBy(GroupInvitation, {
         id,
