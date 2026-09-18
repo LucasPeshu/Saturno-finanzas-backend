@@ -13,10 +13,15 @@ export function databaseOptions(): DataSourceOptions {
   const isSupabaseDefaultDatabase =
     database === 'postgres' &&
     (/\.supabase\.co$/i.test(host) || /\.pooler\.supabase\.com$/i.test(host));
+  const isSupabasePooler = /\.pooler\.supabase\.com$/i.test(host);
   if (!isProjectDatabase && !isSupabaseDefaultDatabase)
     throw new Error(
       'POSTGRES_DATABASE debe ser control_gastos, control_gastos_<entorno> o postgres en Supabase',
     );
+  const rejectUnauthorized =
+    process.env.POSTGRES_SSL_REJECT_UNAUTHORIZED === undefined
+      ? !isSupabasePooler
+      : process.env.POSTGRES_SSL_REJECT_UNAUTHORIZED !== 'false';
   return {
     type: 'postgres',
     host,
@@ -24,10 +29,7 @@ export function databaseOptions(): DataSourceOptions {
     username: process.env.POSTGRES_USERNAME ?? 'postgres',
     password: process.env.POSTGRES_PASSWORD,
     database,
-    ssl:
-      process.env.POSTGRES_SSL === 'true'
-        ? { rejectUnauthorized: true }
-        : false,
+    ssl: process.env.POSTGRES_SSL === 'true' ? { rejectUnauthorized } : false,
     entities: ENTITIES,
     migrations: [InitialBudget1790000000000, UserRolesOwnerMember1790000000001],
     synchronize: false,
