@@ -1,4 +1,4 @@
-import { PartialType } from '@nestjs/swagger';
+import { OmitType, PartialType } from '@nestjs/swagger';
 import { Transform, Type } from 'class-transformer';
 import {
   ArrayMaxSize,
@@ -131,7 +131,9 @@ export class TemplateDto extends ExpenseFieldsDto {
   @Matches(/^20\d{2}-(0[1-9]|1[0-2])$/) startMonth: string;
   @IsOptional() @Matches(/^20\d{2}-(0[1-9]|1[0-2])$/) endMonth?: string;
 }
-export class UpdateTemplateDto extends PartialType(TemplateDto) {
+export class UpdateTemplateDto extends PartialType(
+  OmitType(TemplateDto, ['groupId', 'splits', 'endMonth'] as const),
+) {
   @IsOptional() @IsInt() @Min(1) declare groupId?: number | null;
   @IsOptional()
   @IsArray()
@@ -139,7 +141,9 @@ export class UpdateTemplateDto extends PartialType(TemplateDto) {
   @ValidateNested({ each: true })
   @Type(() => SplitDto)
   declare splits?: SplitDto[] | null;
-  @IsOptional() @Matches(/^20\d{2}-(0[1-9]|1[0-2])$/) declare endMonth?: string | null;
+  @IsOptional() @Matches(/^20\d{2}-(0[1-9]|1[0-2])$/) declare endMonth?:
+    | string
+    | null;
   @IsOptional() @IsBoolean() active?: boolean;
 }
 export class GenerateDto {

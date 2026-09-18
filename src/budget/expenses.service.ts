@@ -148,7 +148,11 @@ export class ExpensesService {
       });
       if (!template) throw new NotFoundException();
       const before = { ...template };
-      const next = { ...template, ...dto };
+      const patch = { ...dto };
+      if ('groupId' in patch && patch.groupId == null) patch.splits = null;
+      if ('splits' in patch && patch.splits == null) patch.splits = null;
+      if ('endMonth' in patch && patch.endMonth == null) patch.endMonth = null;
+      const next = { ...template, ...patch };
       if (next.endMonth && next.endMonth < next.startMonth)
         throw new BadRequestException('Rango de meses inválido');
       // Archiving still works if a category or a group member was deactivated.
@@ -158,7 +162,7 @@ export class ExpensesService {
           groupId: next.groupId ?? undefined,
           splits: next.splits ?? undefined,
         });
-      Object.assign(template, dto);
+      Object.assign(template, patch);
       await m.save(template);
       await this.access.audit.record(
         m,
